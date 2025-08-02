@@ -1,0 +1,22 @@
+# Core LangChain library
+langchain
+
+# For connecting to Google's Gemini models
+langchain-google-genai
+
+# For creating embeddings with HuggingFace models
+langchain-community
+sentence-transformers
+langchain-huggingface
+# For the vector store
+faiss-cpu
+
+# For loading data from CSV files
+pandas
+langchain_experimental
+
+# For creating the web interface
+streamlit
+
+# To load API keys from a .env file
+python-dotenv
