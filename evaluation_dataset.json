@@ -1,0 +1,22 @@
+[
+  {
+    "question": "How many mutual funds do I own in total?",
+    "answer": "4"
+  },
+  {
+    "question": "What is the total current value of my stock portfolio?",
+    "answer": "148350"
+  },
+  {
+    "question": "Which company corresponds to the ticker INFY?",
+    "answer": "Infosys Ltd"
+  },
+  {
+    "question": "What is my profit for the stock with ticker TATAMOTORS?",
+    "answer": "2000"
+  },
+  {
+    "question": "How much did I spend on Zomato according to my bank transactions?",
+    "answer": "649"
+  }
+]

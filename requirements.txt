@@ -20,3 +20,9 @@ streamlit
 
 # To load API keys from a .env file
 python-dotenv
+
+#testing
+pytest
+
+#progress bar
+tqdm
