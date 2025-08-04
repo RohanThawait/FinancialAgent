@@ -26,3 +26,6 @@ pytest
 
 #progress bar
 tqdm
+
+#authentication
+streamlit-authenticator

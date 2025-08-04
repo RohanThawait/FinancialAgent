@@ -1,0 +1,14 @@
+credentials:
+  usernames:
+    jsmith:
+      email: jsmith@gmail.com
+      name: John Smith
+      password: 'some_hashed_password'
+    rbriggs:
+      email: rbriggs@gmail.com
+      name: Rebecca Briggs
+      password: 'some_other_hashed_password'
+cookie:
+  expiry_days: 30
+  key: a_secret_key_for_cookie_signature
+  name: some_cookie_name
