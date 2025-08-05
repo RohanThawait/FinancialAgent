@@ -29,3 +29,6 @@ tqdm
 
 #authentication
 streamlit-authenticator
+
+#real simulate database
+plaid-python
