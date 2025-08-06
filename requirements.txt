@@ -1,34 +1,31 @@
-# Core LangChain library
-langchain
-
-# For connecting to Google's Gemini models
-langchain-google-genai
-
-# For creating embeddings with HuggingFace models
-langchain-community
-sentence-transformers
-langchain-huggingface
-# For the vector store
-faiss-cpu
-
-# For loading data from CSV files
-pandas
-langchain_experimental
-
-# For creating the web interface
+# ------------------ Core Application & UI ------------------
+# The main framework for building the web application
 streamlit
-
-# To load API keys from a .env file
-python-dotenv
-
-#testing
-pytest
-
-#progress bar
-tqdm
-
-#authentication
+# Handles user login and authentication
 streamlit-authenticator
 
-#real simulate database
+# ------------------ AI & LangChain Framework ------------------
+# The core library for building with language models
+langchain
+# Google Gemini integration for LangChain
+langchain-google-genai
+# Community-supported LangChain integrations (e.g., SQL agent toolkit)
+langchain-community
+
+# ------------------ Data Handling & APIs ------------------
+# Essential for data manipulation and analysis
+pandas
+# The official Python client for the Plaid API
 plaid-python
+
+# ------------------ Visualization ------------------
+# For creating interactive charts and graphs
+plotly
+
+# ------------------ Development & Utilities ------------------
+# Loads environment variables from a .env file for security
+python-dotenv
+# The framework for running our unit tests
+pytest
+# A simple library for creating progress bars (used in the evaluation script)
+tqdm

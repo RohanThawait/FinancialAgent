@@ -1,105 +1,153 @@
-import streamlit as st
-from dotenv import load_dotenv
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import RetrievalQA
+"""
+Main Streamlit web application for the AI Finance Agent.
 
-# --- PAGE CONFIGURATION ---
-st.set_page_config(page_title="AI Finance Agent", page_icon="💰", layout="centered")
-
-# --- SETUP AND CACHING ---
-# Load environment variables
-load_dotenv()
-
-# Define paths and model names
-DB_FAISS_PATH = "C:/Users/Rohan/Projects/Project_8/FinancialAgent/faiss_index"
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-LLM_MODEL = "gemini-1.5-flash"
-
-# Define the custom prompt template
-custom_prompt_template = """
-Use the following pieces of information to answer the user's question accurately.
-You are a personal financial assistant. Your answers should be helpful, clear, and based only on the provided context.
-If you don't know the answer from the context, just say that you don't have enough information; don't try to make up an answer.
-
-Context: {context}
-Question: {question}
-
-Helpful answer:
+This script handles:
+1. User authentication and session management.
+2. Rendering the user interface (sidebar, main chat, and feature sections).
+3. Orchestrating calls to the backend logic in `app_logic.py` and `plaid_service.py`.
 """
 
-@st.cache_resource
-def get_qa_chain():
-    """
-    Creates and returns the RetrievalQA chain. The @st.cache_resource decorator
-    ensures this expensive operation runs only once.
-    """
-    # 1. Initialize the embedding model
-    embeddings = HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL,
-        model_kwargs={'device': 'cpu'}
-    )
+# --- Imports ---
+# Standard library imports
+import os
+import time
+import yaml
 
-    # 2. Load the FAISS vector store
-    db = FAISS.load_local(
-        DB_FAISS_PATH, 
-        embeddings, 
-        allow_dangerous_deserialization=True
-    )
+# Third-party imports
+import plotly.graph_objects as go
+import streamlit as st
+import streamlit_authenticator as stauth
+from yaml.loader import SafeLoader
 
-    # 3. Create a retriever
-    retriever = db.as_retriever(search_kwargs={'k': 3})
+# Local application imports
+from app_logic import setup_agent, generate_financial_summary
+from plaid_service import (create_sandbox_public_token, exchange_public_token, 
+                           save_credentials_to_db, get_transactions, 
+                           save_transactions_to_db)
 
-    # 4. Initialize the LLM
-    llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.7)
+# --- UI Rendering Functions ---
+
+def render_sidebar(authenticator, name: str):
+    """Renders the sidebar with a welcome message and logout button."""
+    st.sidebar.title(f"Welcome {name}")
+    authenticator.logout('Logout', 'sidebar')
+
+def render_plaid_section(username: str):
+    """Renders the UI for Plaid integration to sync bank transactions."""
+    with st.expander("🔗 Sync Bank Transactions"):
+        st.write("Click to sync transactions from a sample bank account (Plaid Sandbox).")
+        
+        if st.button("Sync Sample Bank Transactions"):
+            with st.spinner("Connecting to bank and syncing..."):
+                public_token = create_sandbox_public_token()
+                if not public_token:
+                    st.error("Could not create public token. Check Plaid credentials.")
+                    return
+
+                access_token, item_id = exchange_public_token(public_token)
+                if not access_token:
+                    st.error("Failed to exchange public token.")
+                    return
+
+                save_credentials_to_db(username, access_token, item_id)
+                st.write("Connection successful. Preparing transactions...")
+                time.sleep(5)  # Wait for Plaid to prepare data
+
+                transactions = get_transactions(access_token)
+                if transactions:
+                    save_transactions_to_db(username, transactions)
+                    st.success(f"Successfully synced {len(transactions)} new transactions!")
+                    st.balloons()
+                else:
+                    st.success("Connection successful, no new transactions found.")
+
+def render_summary_section(agent, username: str):
+    """Renders the UI for generating an on-demand financial summary."""
+    if st.button("📊 Generate Financial Summary"):
+        with st.spinner("🤖 Generating your financial summary..."):
+            summary_report = generate_financial_summary(agent, username)
+            st.session_state.messages.append({"role": "assistant", "content": summary_report})
+            st.rerun()
+
+def render_chat_interface(agent):
+    """Renders the main chat history and input form."""
+    # Display chat messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            if isinstance(message["content"], go.Figure):
+                st.plotly_chart(message["content"])
+            else:
+                st.markdown(message["content"])
+
+    # Handle new user input
+    if prompt := st.chat_input("Ask a question or for a chart..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.rerun()
+
+    # Generate response if the last message is from the user
+    if st.session_state.messages[-1]["role"] == "user":
+        with st.chat_message("assistant"):
+            with st.spinner("Analyzing..."):
+                try:
+                    result = agent.invoke({"input": st.session_state.messages[-1]["content"]})
+                    response = result["output"]
+                    
+                    # Check for chart objects in the agent's intermediate steps
+                    if "intermediate_steps" in result and result["intermediate_steps"]:
+                        tool_output = result["intermediate_steps"][-1][1]
+                        if isinstance(tool_output, go.Figure):
+                            response = tool_output
+                    
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    st.rerun()
+
+                except Exception as e:
+                    error_message = f"Sorry, an error occurred: {e}"
+                    st.error(error_message)
+                    st.session_state.messages.append({"role": "assistant", "content": error_message})
+                    st.rerun()
+
+# --- Main Application ---
+
+def main():
+    """Main function to run the Streamlit application."""
+    st.set_page_config(page_title="Finance Agent v3", page_icon="💡", layout="centered")
+
+    # --- Authentication ---
+    with open('config.yaml') as file:
+        config = yaml.load(file, Loader=SafeLoader)
     
-    # 5. Create the prompt from the template
-    prompt = PromptTemplate(
-        template=custom_prompt_template,
-        input_variables=['context', 'question']
+    authenticator = stauth.Authenticate(
+        config['credentials'], config['cookie']['name'],
+        config['cookie']['key'], config['cookie']['expiry_days']
     )
+    
+    authenticator.login('main')
+    
+    # --- Application Logic ---
+    if st.session_state.get("authentication_status"):
+        name = st.session_state["name"]
+        username = st.session_state["username"]
 
-    # 6. Create and return the QA chain
-    chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type='stuff',
-        retriever=retriever,
-        return_source_documents=True,
-        chain_type_kwargs={'prompt': prompt}
-    )
-    return chain
+        render_sidebar(authenticator, name)
+        
+        st.title("💡 AI Finance Agent v3")
+        st.write("I can answer questions, create visualizations, and generate summaries!")
 
-# --- UI AND INTERACTION ---
-st.title("💰 AI Finance Agent")
-st.write("Welcome! Ask questions about your financial data.")
+        agent = setup_agent(username=username, name=name)
+        
+        # Initialize chat history
+        if "messages" not in st.session_state:
+            st.session_state.messages = [{"role": "assistant", "content": "How can I help you today?"}]
 
-# Initialize chat history in session state
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "How can I help with your finances today?"}]
+        render_summary_section(agent, username)
+        render_plaid_section(username)
+        render_chat_interface(agent)
 
-# Display chat messages
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    elif st.session_state.get("authentication_status") is False:
+        st.error('Username/password is incorrect')
+    elif st.session_state.get("authentication_status") is None:
+        st.warning('Please enter your username and password')
 
-# Get an instance of the QA chain
-qa_chain = get_qa_chain()
-
-# Handle user input
-if prompt := st.chat_input("Ask about your transactions, stocks, or funds..."):
-    # Add user message to history and display it
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # Get AI response
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            result = qa_chain.invoke({"query": prompt})
-            response = result['result']
-            st.markdown(response)
-            
-    # Add AI response to history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+if __name__ == "__main__":
+    main()

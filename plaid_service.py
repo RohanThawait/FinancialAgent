@@ -17,7 +17,7 @@ PLAID_SECRET = os.getenv("PLAID_SECRET")
 PLAID_ENV = os.getenv("PLAID_ENV", "sandbox")
 DB_PATH = "finance.db"
 
-host = plaid.Environment.Sandbox if PLAID_ENV == "sandbox" else plaid.Environment.Development
+host = plaid.Environment.Sandbox
 configuration = plaid.Configuration(
     host=host,
     api_key={'clientId': PLAID_CLIENT_ID, 'secret': PLAID_SECRET,}
@@ -81,7 +81,15 @@ def get_transactions(access_token: str):
 
 def save_transactions_to_db(username: str, transactions: list):
     conn = sqlite3.connect(DB_PATH)
-    df = pd.DataFrame(transactions)
+
+    transactions_data = [t.to_dict() for t in transactions]
+    df = pd.DataFrame(transactions_data)
+
+    if df.empty or not all(col in df.columns for col in ['date', 'name', 'amount']):
+        print("No new transactions to save or data is malformed.")
+        conn.close()
+        return
+
     df_mapped = pd.DataFrame({
         'Date': pd.to_datetime(df['date']),
         'Description': df['name'],
@@ -89,6 +97,7 @@ def save_transactions_to_db(username: str, transactions: list):
         'Type': df['amount'].apply(lambda x: 'Debit' if x > 0 else 'Credit'),
         'username': username
     })
+
     df_mapped.to_sql('bank_transactions', conn, if_exists='append', index=False)
     conn.close()
     print(f"Saved {len(df_mapped)} new transactions for user {username}")

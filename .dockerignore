@@ -1,0 +1,10 @@
+# Ignore the Python virtual environment
+venv/
+
+# Ignore Python's cache files
+__pycache__/
+*.pyc
+
+# Ignore local development files and secrets
+.env
+.pytest_cache/
