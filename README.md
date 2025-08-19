@@ -23,45 +23,50 @@ The application is built on a modern, agent-based architecture. The Streamlit fr
 graph TD
     %% ==== USER INTERFACE ====
     subgraph UI[User Interface]
-        A[👤 User] --> B{💻 Streamlit UI};
+        A[User] --> B[Streamlit UI]
     end
 
     %% ==== BACKEND LOGIC ====
     subgraph Backend[Backend Logic]
-        B --> C{🔐 Authentication};
-        C -- ✅ Authenticated --> D[⚡ LangChain Agent Executor];
+        B --> C{Authentication}
+        C -- Authenticated --> D[LangChain Executor]
     end
 
-    %% ==== AI CORE ====
+    %% ==== AI CORE (HERO) ====
     subgraph AI[AI Core]
-        D -- Prompt --> E[🧠 Google Gemini LLM];
-        E -- Tool Selection --> D;
+        D --> E[Google Gemini LLM]
+        E -- Tool Selection --> D
     end
 
-    %% ==== TOOLS ====
+    %% ==== AGENT TOOLS ====
     subgraph Tools[Agent Tools]
-        D -- Executes --> F((🗄 SQL Database Toolkit));
-        D -- Executes --> G((📊 Custom Visualization Tool));
+        D --> F[SQL Database Toolkit]
+        D --> G[Visualization Tool]
     end
 
     %% ==== DATA LAYER ====
     subgraph Data[Data Layer]
-        F --> H[(💾 SQLite Database)];
-        G --> H;
-        I[🔗 Plaid API] --> H;
+        F --> H[(SQLite Database)]
+        G --> H
+        I[Plaid API] --> H
     end
 
     %% ==== STYLING ====
-    style UI fill:#3a86ff,stroke:#1d1d1d,stroke-width:2px,color:#fff
-    style Backend fill:#8338ec,stroke:#1d1d1d,stroke-width:2px,color:#fff
-    style AI fill:#ff006e,stroke:#1d1d1d,stroke-width:2px,color:#fff
-    style Tools fill:#fb5607,stroke:#1d1d1d,stroke-width:2px,color:#fff
-    style Data fill:#ffbe0b,stroke:#1d1d1d,stroke-width:2px,color:#1d1d1d
+    %% Neutral greys for most layers
+    style UI fill:#f5f5f5,stroke:#444,color:#000
+    style Backend fill:#f5f5f5,stroke:#444,color:#000
+    style Tools fill:#f5f5f5,stroke:#444,color:#000
+    style Data fill:#f5f5f5,stroke:#444,color:#000
 
-    %% Highlight Key Nodes
-    style B fill:#4361ee,stroke:#222,color:#fff
-    style D fill:#4cc9f0,stroke:#222,color:#000
-    style E fill:#ff595e,stroke:#222,color:#fff
+    %% Hero (AI Core) highlighted in teal
+    style AI fill:#00b4d8,stroke:#006d77,stroke-width:2px,color:#fff
+
+    %% Highlight Gemini LLM node
+    style E fill:#00b4d8,stroke:#006d77,stroke-width:2px,color:#fff
+
+    %% Subtle highlight for LangChain Executor (bridge to AI Core)
+    style D fill:#e0f7fa,stroke:#444,color:#000
+
 ````
 
 -----
