@@ -21,34 +21,47 @@ The application is built on a modern, agent-based architecture. The Streamlit fr
 
 ```mermaid
 graph TD
-    subgraph User Interface
-        A[User] --> B{Streamlit UI};
+    %% ==== USER INTERFACE ====
+    subgraph UI[User Interface]
+        A[👤 User] --> B{💻 Streamlit UI};
     end
 
-    subgraph Backend Logic
-        B --> C{Authentication};
-        C -- Authenticated User --> D[LangChain Agent Executor];
+    %% ==== BACKEND LOGIC ====
+    subgraph Backend[Backend Logic]
+        B --> C{🔐 Authentication};
+        C -- ✅ Authenticated --> D[⚡ LangChain Agent Executor];
     end
 
-    subgraph AI Core
-        D -- Prompt --> E[Google Gemini LLM];
+    %% ==== AI CORE ====
+    subgraph AI[AI Core]
+        D -- Prompt --> E[🧠 Google Gemini LLM];
         E -- Tool Selection --> D;
     end
 
-    subgraph Agent Tools
-        D -- Executes --> F((SQL Database Toolkit));
-        D -- Executes --> G((Custom Visualization Tool));
+    %% ==== TOOLS ====
+    subgraph Tools[Agent Tools]
+        D -- Executes --> F((🗄 SQL Database Toolkit));
+        D -- Executes --> G((📊 Custom Visualization Tool));
     end
 
-    subgraph Data Layer
-        F --> H[(SQLite Database)];
+    %% ==== DATA LAYER ====
+    subgraph Data[Data Layer]
+        F --> H[(💾 SQLite Database)];
         G --> H;
-        I[Plaid API] --> H;
+        I[🔗 Plaid API] --> H;
     end
 
-    style B fill:#00b4d8,stroke:#333,stroke-width:2px;
-    style D fill:#90e0ef,stroke:#333,stroke-width:2px;
-    style E fill:#ffbe0b,stroke:#333,stroke-width:2px;
+    %% ==== STYLING ====
+    style UI fill:#3a86ff,stroke:#1d1d1d,stroke-width:2px,color:#fff
+    style Backend fill:#8338ec,stroke:#1d1d1d,stroke-width:2px,color:#fff
+    style AI fill:#ff006e,stroke:#1d1d1d,stroke-width:2px,color:#fff
+    style Tools fill:#fb5607,stroke:#1d1d1d,stroke-width:2px,color:#fff
+    style Data fill:#ffbe0b,stroke:#1d1d1d,stroke-width:2px,color:#1d1d1d
+
+    %% Highlight Key Nodes
+    style B fill:#4361ee,stroke:#222,color:#fff
+    style D fill:#4cc9f0,stroke:#222,color:#000
+    style E fill:#ff595e,stroke:#222,color:#fff
 ````
 
 -----
