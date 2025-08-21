@@ -8,7 +8,7 @@
   <a href="https://huggingface.co/spaces/thawait/AI-Finance-Agent">
     <img src="https://img.shields.io/badge/Live_Demo-🚀-blue?style=for-the-badge" alt="Live Demo">
   </a>
-  <a href="www.linkedin.com/in/rohan-thawait-7137081a5">
+  <a href="https://www.linkedin.com/in/rohan-thawait-7137081a5/">
     <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin" alt="LinkedIn Profile">
   </a>
 </p>
