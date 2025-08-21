@@ -5,10 +5,10 @@
 ---
 
 <p align="center">
-  <a href="[Link-to-Your-Live-Demo-URL]">
+  <a href="https://huggingface.co/spaces/thawait/AI-Finance-Agent">
     <img src="https://img.shields.io/badge/Live_Demo-🚀-blue?style=for-the-badge" alt="Live Demo">
   </a>
-  <a href="[Link-to-Your-LinkedIn-Profile]">
+  <a href="www.linkedin.com/in/rohan-thawait-7137081a5">
     <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin" alt="LinkedIn Profile">
   </a>
 </p>
@@ -146,5 +146,3 @@ graph TD
     # Run the container
     docker run -p 8501:8501 --env-file .env finance-agent
     ```
-```
-```
